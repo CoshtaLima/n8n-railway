@@ -11,6 +11,7 @@ RUN apk --update add --virtual build-dependencies python3 build-base && \
     apk del build-dependencies
 
 WORKDIR /data
+RUN npm isntall -g @aws-sdk/client-athena
 
 EXPOSE $PORT
 
