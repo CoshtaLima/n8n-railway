@@ -1,28 +1,22 @@
-FROM docker.n8n.io/n8nio/n8n
+FROM node:18-alpine
 
-# Existing ARGS
-ARG PGPASSWORD
-ARG PGHOST
-ARG PGPORT
-ARG PGDATABASE
-ARG PGUSER
-ARG ENCRYPTION_KEY
-ARG CUSTOM_MODULES="@aws-sdk/client-athena@latest"  # Instala o pacote Athena mais recente
+ARG N8N_VERSION=1.56.1
 
-# Setting existing ENVs
-ENV DB_TYPE=postgresdb
-ENV DB_POSTGRESDB_DATABASE=$PGDATABASE
-ENV DB_POSTGRESDB_HOST=$PGHOST
-ENV DB_POSTGRESDB_PORT=$PGPORT
-ENV DB_POSTGRESDB_USER=$PGUSER
-ENV DB_POSTGRESDB_PASSWORD=$PGPASSWORD
-ENV N8N_ENCRYPTION_KEY=$ENCRYPTION_KEY
-ENV N8N_LOG_LEVEL=debug
+RUN apk add --update graphicsmagick tzdata
 
-# Instala os pacotes personalizados
 USER root
-WORKDIR /usr/local/lib/node_modules/n8n
-RUN npm install -g $CUSTOM_MODULES
-USER node
 
-CMD ["n8n"]
+ENV NODE_FUNCTION_ALLOW_EXTERNAL=@aws-sdk/client-athena
+
+RUN apk --update add --virtual build-dependencies python3 build-base && \
+    npm_config_user=root npm install --location=global n8n@${N8N_VERSION} && \
+    apk del build-dependencies && \
+    npm install @aws-sdk/client-athena
+
+WORKDIR /data
+
+EXPOSE $PORT
+
+ENV N8N_USER_ID=root
+
+CMD export N8N_PORT=$PORT && n8n start
