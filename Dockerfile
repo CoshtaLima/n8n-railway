@@ -7,6 +7,7 @@ RUN apk --update add graphicsmagick tzdata
 
 USER root
 
+RUN npm install -g npm@11.2.0
 # Separate the build dependencies installation
 RUN apk --update add --virtual build-dependencies python3 build-base
 
