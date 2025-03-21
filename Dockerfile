@@ -2,16 +2,23 @@ FROM node:18-alpine
 
 ARG N8N_VERSION=1.56.1
 
-RUN apk add --update graphicsmagick tzdata
+RUN apk --update add graphicsmagick tzdata
 
 USER root
 
 ENV NODE_FUNCTION_ALLOW_EXTERNAL=@aws-sdk/client-athena
 
-RUN apk --update add --virtual build-dependencies python3 build-base && \
-    npm_config_user=root npm install --location=global n8n@${N8N_VERSION} && \
-    apk del build-dependencies && \
-    npm install @aws-sdk/client-athena
+# Separate the build dependencies installation
+RUN apk --update add --virtual build-dependencies python3 build-base
+
+# Install n8n globally
+RUN npm_config_user=root npm install --location=global n8n@${N8N_VERSION}
+
+# Remove build dependencies
+RUN apk del build-dependencies
+
+# Install AWS SDK client for Athena
+RUN npm install @aws-sdk/client-athena
 
 WORKDIR /data
 
