@@ -2,25 +2,29 @@ FROM node:18-alpine
 
 ARG N8N_VERSION=1.56.1
 
+# Instala dependências básicas
 RUN apk --update add graphicsmagick tzdata
-
 
 USER root
 
+WORKDIR /data
+
+# Atualiza o npm para a versão 11.2.0 (mas lembre-se: essa versão só é compatível com Node 20 ou superior)
 RUN npm install -g npm@11.2.0
-# Separate the build dependencies installation
+
+# Define o diretório de trabalho onde sua aplicação estará
+
+# Instala as dependências de build
 RUN apk --update add --virtual build-dependencies python3 build-base
 
-# Install n8n globally
+# Instala o n8n globalmente
 RUN npm_config_user=root npm install --location=global n8n@${N8N_VERSION}
 
-# Install AWS SDK client for Athena
+# Instala o AWS SDK client para Athena dentro do diretório /data
 RUN npm install @aws-sdk/client-athena
 
-# Remove build dependencies
+# Remove as dependências de build
 RUN apk del build-dependencies
-
-WORKDIR /data
 
 EXPOSE $PORT
 
